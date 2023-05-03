@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+   <HEAD>
+      <TITLE>Test acc&egrave;s API SIREN pour recherche Etab à partir du siret </TITLE>
+
+	  
+	  <meta http-equiv="Content-Type" content="application/json">
+	  
+	  <!--application/x-www-form-urlencoded -->
+   </HEAD>
+   
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js">
+
+
+
+var code_siret; 
+
+</script>
+	
+
+<BODY>	
+
+<div style="font-family:Tahoma">
+Indiquez votre num&eacute;ro SIRET ou SIREN (Exemple : 25400330400030)<br><br>
+<form name="frm_sir"> 
+<input type="text" name="S_siret" id="S_siret"/> 
+<input type="button" value="Afficher" onclick="aff_siret()"/>
+</form> 
+<br><br>
+
+<div id="avert1" style="font-family:Tahoma ;color:CornflowerBlue">
+
+</div>
+
+<table style="font-family:Tahoma" border="0" name="maTable" id="maTable">
+
+<tbody>
+ </tbody>
+</table> 
+</div>
+
+<div id="avert2" style="font-family:Tahoma;color:CornflowerBlue">
+
+<div>
+<script> 
+var param_insee = "";
+var param_organ = "";
+var param_adresse = "";
+ 
+ 
+function aff_siret() {
+
+ //test si le SIRET n'est pas vide;
+
+  if (document.forms['frm_sir'].S_siret.value === "") {
+    alert("Vous devez obligatoirement renseigner votre num\u00e9ro SIRET ou SIREN");
+   
+  
+   } else {
+   
+   
+//vide les DIV
+$('#avert1').empty();
+$('#avert2').empty();
+	
+
+$('#avert1').append('<strong>Voici les informations relatives &agrave; l\'organisme dont vous avez rempli le num&eacute;ro :</strong><br><br>');
+         
+        // Utilise l'API développée par Etalab pour la recherche entreprise. Ne demande pas de bearer
+		let url = "https://recherche-entreprises.api.gouv.fr/search?q="+document.forms['frm_sir'].S_siret.value;
+        
+		
+		let json = $.getJSON(url, function() {
+            
+           
+			
+			let jsonTotalDep = JSON.parse(json.responseText);
+			
+			let longu = jsonTotalDep.results.length;
+			
+			if (longu != 1) {
+			alert("Vous avez commis une erreur de saisie ou ce num\u00e9ro n'existe pas");
+			$('#avert1').empty();
+			$('#avert2').empty();
+			$('#maTable tbody').empty();
+		exit;
+			}
+			
+			
+// efface les résultats précédents	
+
+$('#maTable tbody').empty();				
+			
+	
+			for(var i= 0; i < longu; i++)
+{
+  
+	 $('#maTable tbody').append('<tr align= "left"><td><strong>SIREN</strong>:&nbsp;'+jsonTotalDep.results[i].siren+'</td><td>--</td><td><strong>ENTIT&Eacute; </strong>:&nbsp;'+jsonTotalDep.results[i].nom_complet + '</td><td>--</td><td><strong>ADRESSE</strong>:&nbsp;'+jsonTotalDep.results[i].siege.adresse+'</td></tr>');
+	 
+param_insee="G01Q01="+jsonTotalDep.results[i].siren;
+param_organ="G01Q02="+jsonTotalDep.results[i].nom_complet;
+param_adresse="G01Q03="+jsonTotalDep.results[i].siege.adresse;	 
+	 
+}
+$('#avert2').append('<strong><br><br>Souhaitez vous r&eacute;pondre au questionnaire en utilisant ces param&egrave;tres ? </strong><button onclick="lanceurl()">oui</button>&nbsp;<button onclick="reinit()">non</button><br><br>');
+
+
+					
+          })
+}
+}
+
+function reinit() {
+// remet tout à zéro
+$('#maTable tbody').empty();
+$('#avert1').empty();
+$('#avert2').empty();
+
+}
+
+function lanceurl() {
+// 
+
+
+var url = "https://sondage.alpi40.fr/137343?"+param_insee+"&"+param_organ+"&"+param_adresse;
+$(location).attr('href',url);
+
+}
+
+
+</script>	
+	
+</div>
+
+
+	  
+
+   </BODY>
+</HTML>
+
+
+
